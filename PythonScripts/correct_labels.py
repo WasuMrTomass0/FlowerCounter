@@ -39,11 +39,13 @@ def correct_labels(directory: str, shape: Tuple[int, int], old_label: str, new_l
         xml_obj = XMLImage(xml_path=xml_path)
         # Edit
         index = -1
+        to_delete = []
         for box in xml_obj.boxes_classes:
             index += 1
             # Delete label
             if delete_label_flag and box.label.lower() == del_label:
-                xml_obj.boxes_classes.pop(index)
+                to_delete.append(index)
+                # xml_obj.boxes_classes.pop(index)
                 continue
 
             # Switch label
@@ -53,6 +55,9 @@ def correct_labels(directory: str, shape: Tuple[int, int], old_label: str, new_l
             # Correct label
             box.label = change_function(box.label).strip()
             pass  # for box
+        for i in range(len(to_delete) - 1, -1, -1):
+            xml_obj.boxes_classes.pop(to_delete[i])
+
         # Save
         xml_obj.save()
         pass  # for xml_path

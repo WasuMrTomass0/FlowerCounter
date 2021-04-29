@@ -42,7 +42,7 @@ def main(classes_path, template_path, g_tfrecord_dir, l_map_dir):
     foo += "    else:\n        return None\n"
     
     # Create generate_tfrecord.py
-    gt_path = 'generate_tfrecord.txt' if not g_tfrecord_dir else os.path.join(g_tfrecord_dir, 'generate_tfrecord.py')
+    gt_path = 'generate_tfrecord.py' if not g_tfrecord_dir else os.path.join(g_tfrecord_dir, 'generate_tfrecord.py')
     # Insert function
     text = template.replace(SUBSTRING, foo)
     # Save file
