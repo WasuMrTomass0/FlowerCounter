@@ -83,7 +83,8 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--directory', type=str, required=True, help='Directory containing the images')
     parser.add_argument('-old', '--old', type=str, required=False, default="", help='Replaced class name')
     parser.add_argument('-new', '--new', type=str, required=False, default="", help='Inserted class name')
-    parser.add_argument('-s', '--shape', type=int, nargs=2, required=True, metavar=('width', 'height'), help='Minimal bounding box dimensions')
+    parser.add_argument('-s', '--shape', type=int, nargs=2, required=True, metavar=('width', 'height'),
+                        help='Minimal bounding box dimensions')
     parser.add_argument('-skip_lower', action='store_true', help='Skip changing classes to lower string')
     
     args = parser.parse_args()

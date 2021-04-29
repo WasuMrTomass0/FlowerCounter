@@ -1,4 +1,4 @@
-import os
+import sys
 import platform
 import numpy as np
 
@@ -6,6 +6,9 @@ import numpy as np
 # # # # Do not change # # # #
 # Slash symbol
 SLASH = '\\' if platform.system() == 'Windows' else '/'
+# Colab flag
+RUNNING_IN_COLAB = 'google.colab' in sys.modules
+
 
 # Types
 CV2_IMAGE = np.ndarray  # Used for type hinting

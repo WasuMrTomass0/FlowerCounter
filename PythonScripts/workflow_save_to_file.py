@@ -1,13 +1,12 @@
 import glob
 import os
 import cv2
-import argparse
 from typing import Tuple, List
 import WasuLib.settings as settings
 from WasuLib.trace import Trace
 from WasuLib.stage_prepare import prepare_data
 from WasuLib.stage_divide import divide_data
-from WasuLib.xml_package.xml_image import XMLImage
+from WasuLib.xml_image import XMLImage
 
 
 def workflow(image: settings.CV2_IMAGE, sub_size, prepare_size, xml_obj: XMLImage) -> \

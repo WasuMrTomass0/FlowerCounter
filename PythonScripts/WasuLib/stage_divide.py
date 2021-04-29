@@ -1,9 +1,7 @@
 from typing import List, Tuple
 
-import cv2
-
 import WasuLib.settings as settings
-from WasuLib.xml_package.xml_image import XMLImage
+from WasuLib.xml_image import XMLImage
 from WasuLib.trace import Trace
 
 
