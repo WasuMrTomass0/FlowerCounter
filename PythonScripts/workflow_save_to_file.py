@@ -1,6 +1,7 @@
 import glob
 import os
 import cv2
+import argparse
 from typing import Tuple, List
 import WasuLib.settings as settings
 from WasuLib.trace import Trace
@@ -44,31 +45,35 @@ def main(read_directory: str, save_directory: str, sub_size, prepare_size):
             # Save sub data
             sub_image = list_image[i]
             sub_xml_obj = list_xml_obj[i]
-            cv2.imwrite(create_sub_name(img_path, i, save_directory), sub_image)
+
+            img_file_name = create_sub_name(img_path, i, save_directory)
+            sub_xml_obj.image_filename = img_file_name.split(settings.SLASH)[-1]
+
+            cv2.imwrite(img_file_name, sub_image)
             sub_xml_obj.save(create_sub_name(xml_path, i, save_directory))
             pass  # for i
         pass  # for xml_path
     pass  # main
 
 
-# if __name__ == '__main__':
-#     parser = argparse.ArgumentParser(description="Rescale images")
-#     parser.add_argument('-d', '--read_directory', type=str, required=True,
-#                         help='Directory containing the images and xml files')
-#     parser.add_argument('-s', '--save_directory', type=str, required=True,
-#                         help='Save directory')
-#     parser.add_argument('--sub_size', type=int, nargs=2, required=True, metavar=('width', 'height'),
-#                         help='Sub image size')
-#     parser.add_argument('--prepare_multiply_size', type=int, nargs=2, required=True,
-#                         metavar=('width_scale', 'height_scale'), help='Prepared image size')
-#     args = parser.parse_args()
-#     stage_prepare_size = (args.sub_size[0] * args.prepare_size[0], args.sub_size[1] * args.prepare_size[1])
-#     main(args.read_directory, args.save_directory, args.sub_size, stage_prepare_size)
-#     pass
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Workflow environment fo dividing images and xml files")
+    parser.add_argument('-d', '--read_directory', type=str, required=True,
+                        help='Directory containing the images and xml files')
+    parser.add_argument('-s', '--save_directory', type=str, required=True,
+                        help='Save directory')
+    parser.add_argument('--sub_size', type=int, nargs=2, required=True, metavar=('width', 'height'),
+                        help='Sub image size')
+    parser.add_argument('--prepare_multiply', type=int, nargs=2, required=True,
+                        metavar=('width_scale', 'height_scale'), help='Prepared image size')
+    args = parser.parse_args()
+    stage_prepare_size = (args.sub_size[0] * args.prepare_multiply[0], args.sub_size[1] * args.prepare_multiply[1])
+    main(args.read_directory, args.save_directory, args.sub_size, stage_prepare_size)
+    pass
 
-main(
-    read_directory='images',
-    save_directory='images/out',
-    sub_size=(1024, 1024),
-    prepare_size=(4096, 4096)
-)
+# main(
+#     read_directory='images',
+#     save_directory='images/out',
+#     sub_size=(1024, 1024),
+#     prepare_size=(4096, 4096)
+# )

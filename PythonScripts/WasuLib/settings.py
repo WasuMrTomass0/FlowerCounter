@@ -38,7 +38,7 @@ STAGE_PREPARE_IMAGE_CUT_BOTTOM_RIGHT = 6    # NotImplemented
 STG_PREPARE_METHOD = STAGE_PREPARE_IMAGE_RESIZE
 
 # Trace
-TRACE_LOG_PATH_FILE = r'C:\Studia\AAW\Projekt\log_file.txt' if platform.system() == 'Windows' \
+TRACE_LOG_PATH_FILE = r'C:\Projekty\PyCharm\FlowerCounter\PythonScripts\log_file.txt' if platform.system() == 'Windows' \
     else '/content/log_file.txt'
 # TRACE_ALLOW = TRACE_INFO  # Allow this and higher
 TRACE_ALLOW = TRACE_DEBUG   # Allow this and higher

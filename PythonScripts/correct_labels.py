@@ -1,103 +1,107 @@
 import glob
-import cv2
-import xmltodict
-from dict2xml import dict2xml
+import os.path
 import argparse
+from typing import Tuple
+from WasuLib.xml_image import XMLImage
+from WasuLib.trace import Trace
+
+NO_CHANGE = 0
+LOWER_CASE = 1
+UPPER_CASE = 2
+TITLE = 3
 
 
-def correct_labels_from_xml(dir, minimal_box_shape, old_class, new_class, skip_lower):
-    # Read all xml files in directory
-    paths = glob.glob(f"{dir}/*.xml")
-    # Show info
-    print(f"Found {len(paths)} xml files in {dir}")
-    # Prepare dict
-    classes = dict()
-    incorrect_boxes = 0
-    X_MIN_WIDTH, Y_MIN_HEIGHT = minimal_box_shape
-    if not old_class or not new_class:
-        CHANGE_CLASS = False
+def correct_labels(directory: str, shape: Tuple[int, int], old_label: str, new_label: str, del_label: str,
+                   change_type: int):
+    if change_type == LOWER_CASE:
+        change_function = str.lower
+    elif change_type == UPPER_CASE:
+        change_function = str.upper
+    elif change_type == TITLE:
+        change_function = str.title
     else:
-        # old_class = old_class.lower()
-        # new_class = new_class.lower()
-        CHANGE_CLASS = True
-    # Read all sizes from xml files:
-    for xml_file in paths:
-        SAVE_XML_FILE = False
-        # Read file
-        with open(xml_file, 'r') as token:
-            xml = token.read()
-        # Convert to dict
-        xml = xmltodict.parse(xml)
-        # Read BBoxes info
-        objects = xml['annotation']['object']
-        # Single bboxes in image are stored differently than multiple bbonxes
-        if type(objects) != list:
-            objects = [objects]
-        # Iterate through bound boxes
-        for obj in objects:
-            # Read data 
-            c = obj['name']
-            x_min = int(obj['bndbox']['xmin'])
-            x_max = int(obj['bndbox']['xmax'])
-            y_min = int(obj['bndbox']['ymin'])
-            y_max = int(obj['bndbox']['ymax'])
-            # Store class
-            if c in classes:
-                classes[c] += 1
-            else:
-                classes[c] = 1
-            # Check box correctness
-            if x_max - x_min > X_MIN_WIDTH or y_max - y_min > Y_MIN_HEIGHT:
-                incorrect_boxes += 1
-                pass 
-            # Swap class name
-            if CHANGE_CLASS and c == old_class:
-                obj['name'] = new_class
-                SAVE_XML_FILE = True
-                pass
-            # Make sure class name is lower
-            elif not skip_lower and c.lower() != c:
-                obj['name'] = c.lower()
-                SAVE_XML_FILE = True
-                pass
-            pass  # for obj in objects
+        change_function = str
 
-        # Save xml
-        if SAVE_XML_FILE:
-            # Save resized data into xml file
-            xml = dict2xml(xml)
-            with open(xml_file, 'w') as token:
-                token.write(xml)
-            pass
-        pass  # for xml_file in paths
-    # Show counted sizes
-    print("Class".ljust(12, ' ') + "- \tNum")
-    for key, value in classes.items():
-        print(f"  {key.ljust(10, ' ')}- \t  {value}")
-        pass
+    switch_labels = bool(old_label) and bool(new_label)
+    delete_label_flag = bool(del_label)
+    any_change = switch_labels or (change_function is not str) or delete_label_flag
+
+    if not any_change:
+        Trace(f"\nNo change needed.\n", Trace.TRACE_INFO, __file__, correct_labels.__name__)
+        return
+
+    old_label = old_label.lower()
+    del_label = del_label.lower()
+
+    xml_paths = glob.glob(os.path.join(directory, '*.xml'))
+    for xml_path in xml_paths:
+        # Read
+        xml_obj = XMLImage(xml_path=xml_path)
+        # Edit
+        index = -1
+        for box in xml_obj.boxes_classes:
+            index += 1
+            # Delete label
+            if delete_label_flag and box.label.lower() == del_label:
+                xml_obj.boxes_classes.pop(index)
+                continue
+
+            # Switch label
+            if switch_labels and box.label.lower() == old_label:
+                box.label = new_label
+
+            # Correct label
+            box.label = change_function(box.label).strip()
+            pass  # for box
+        # Save
+        xml_obj.save()
+        pass  # for xml_path
     pass
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Rescale images")
+    parser = argparse.ArgumentParser(description="Correct xml files")
     parser.add_argument('-d', '--directory', type=str, required=True, help='Directory containing the images')
+
     parser.add_argument('-old', '--old', type=str, required=False, default="", help='Replaced class name')
     parser.add_argument('-new', '--new', type=str, required=False, default="", help='Inserted class name')
-    parser.add_argument('-s', '--shape', type=int, nargs=2, required=True, metavar=('width', 'height'),
-                        help='Minimal bounding box dimensions')
-    parser.add_argument('-skip_lower', action='store_true', help='Skip changing classes to lower string')
-    
+
+    parser.add_argument('-del', '--delete', type=str, required=False, default="", help='Delete class name')
+
+    parser.add_argument('--shape', type=int, nargs=2, required=False, metavar=('width', 'height'),
+                        default=(0, 0), help='Minimal bounding box dimensions')
+
+    parser.add_argument('-lower_case', action='store_true', help='Change labels to lower case')
+    parser.add_argument('-upper_case', action='store_true', help='Change labels to upper case')
+    parser.add_argument('-title', action='store_true', help='Change labels to title')
+
     args = parser.parse_args()
-    
-    directory = args.directory
-    old = args.old
-    new = args.new
-    skip = args.skip_lower
-    shape = args.shape
-    
-    print("Before:")
-    # dir, minimal_box_shape, old_class, new_class, skip_lower
-    correct_labels_from_xml(directory, shape, old, new, skip)
-    print("\nAfter:")
-    correct_labels_from_xml(directory, shape, None, None, True)
+
+    if args.lower_case:
+        label_operation = LOWER_CASE
+    elif args.upper_case:
+        label_operation = UPPER_CASE
+    elif args.title:
+        label_operation = TITLE
+    else:
+        label_operation = NO_CHANGE
+
+    print(f"Before:")
+    command = f"python count_sizes.py -d {args.directory}"
+    os.system(command)
+    print(f" - " * 20)
+    correct_labels(
+        directory=args.directory,
+        shape=args.shape,
+        old_label=args.old,
+        new_label=args.new,
+        del_label=args.delete,
+        change_type=label_operation
+    )
+
+    print(f"After:")
+    command = f"python count_sizes.py -d {args.directory}"
+    os.system(command)
+    print(f" - " * 20)
+
     pass
