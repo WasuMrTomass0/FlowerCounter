@@ -84,5 +84,6 @@ def show_inference(model, image_path):
         use_normalized_coordinates=True,
         line_thickness=1)
     # Show image
-    display(Image.fromarray(image_np))
-    pass  # show_inference
+    ret_image = Image.fromarray(image_np)
+    display(ret_image)
+    return ret_image
