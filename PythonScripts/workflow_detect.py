@@ -9,6 +9,7 @@ from WasuLib.stage_prepare import prepare_data
 from WasuLib.stage_divide import divide_data
 from WasuLib.xml_image import XMLImage
 import detector_function
+from WasuLib.bounding_box import BBox
 
 
 def workflow(image: settings.CV2_IMAGE, sub_size, prepare_size, xml_obj: XMLImage) -> \
@@ -47,7 +48,32 @@ def main(read_directory: str, save_directory: str, sub_size, prepare_size):
             detection_boxes, detection_classes, detection_scores = detector_function.detect_from_image(
                 detector_function.detection_model, image)
 
+            for i in range(min(len(detection_boxes), len(detection_classes), len(detection_scores))):
+                if detection_scores[i] < MIN_SCORE_THRESHOLD:
+                    continue
+
+                x_min = int(detection_boxes[i][0] * SUB_IMAGE_WIDTH)
+                print(f"x_min {x_min}")
+                x_max = int(detection_boxes[i][2] * SUB_IMAGE_WIDTH)
+                print(f"x_max {x_max}")
+                y_min = int(detection_boxes[i][1] * SUB_IMAGE_HEIGHT)
+                print(f"y_min {y_min}")
+                y_max = int(detection_boxes[i][3] * SUB_IMAGE_HEIGHT)
+                print(f"y_max {y_max}")
+
+                label_index = detection_classes[i]
+                print(f"label_index {label_index}")
+                label = detection_boxes.category_index[label_index]
+                print(f"label {label}")
+                score = detection_scores[i]
+                print(f"score {score}")
+
+                pass  # for i
             pass  # for image
         pass  # for xml_path
     pass  # main
 
+
+MIN_SCORE_THRESHOLD = 0.2
+SUB_IMAGE_WIDTH = 1024
+SUB_IMAGE_HEIGHT = 1024
