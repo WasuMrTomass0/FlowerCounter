@@ -83,7 +83,20 @@ def show_inference(model, image_path):
         instance_masks=output_dict.get('detection_masks_reframed', None),
         use_normalized_coordinates=True,
         line_thickness=1)
+
+    print("HELLO WORLD")
+    print(f"output_dict['detection_boxes']:   {output_dict['detection_boxes']}")
+    print(f"output_dict['detection_classes']: {output_dict['detection_classes']}")
+    print(f"output_dict['detection_scores']:  {output_dict['detection_scores']}")
+    print(f"output_dict.get('detection_masks_reframed', None) {output_dict.get('detection_masks_reframed', None)}")
+
     # Show image
     ret_image = Image.fromarray(image_np)
     display(ret_image)
     return ret_image
+
+
+def detect_from_image(model, image):
+    image_np = np.array(image)
+    output_dict = run_inference_for_single_image(model, image_np)
+    return output_dict['detection_boxes'], output_dict['detection_classes'], output_dict['detection_scores']
