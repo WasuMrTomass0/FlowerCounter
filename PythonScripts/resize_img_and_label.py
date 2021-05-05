@@ -9,6 +9,8 @@ from WasuLib.stage_prepare import resize
 def main(directory: str, shape2d: Tuple[int, int]):
     # Counters 
     print(type(shape2d), shape2d)
+    shape2d = (int(shape2d[0]), int(shape2d[1]))
+    print(type(shape2d), shape2d)
     cnt = 0
     cnt_no_resize_needed = 0
     paths = glob.glob(f"{directory}/*.xml")
