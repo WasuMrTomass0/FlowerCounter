@@ -86,8 +86,10 @@ def show_inference(model, image_path):
 
     # Show image
     ret_image = Image.fromarray(image_np)
-    img.save(f'exportedImages/detected_{cnt}.png')
-    cnt += 1
+    name = image_path.split('DSC')[-1]
+    name = name.split('.')[0]
+    print(name)
+    ret_image.save(f'exportedImages/detected_{name}.png')
     # display(ret_image)
     return ret_image
 
